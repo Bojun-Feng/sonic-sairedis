@@ -3,5 +3,7 @@ common --registry=file://%workspace%/../../tools/bazel/registry
 common --registry=https://bcr.bazel.build
 
 build:stamp --stamp
-build:stamp --workspace_status_command="/home/blorente/code/github.com/sonic-net/sonic-sairedis/stamp_vars.sh"
-build --config=stamp
+build:stamp --workspace_status_command="./stamp_vars.sh"
+# Stamp config disabled by default; it embeds git revision strings into
+# binaries and requires the workspace to be a git repository.
+# build --config=stamp
