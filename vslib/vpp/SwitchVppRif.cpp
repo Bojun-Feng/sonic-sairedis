@@ -1905,9 +1905,10 @@ sai_status_t SwitchVpp::vpp_remove_router_interface(sai_object_id_t rif_id)
 
     char hw_del_parent[32];
     const char *parent_hwif = vpp_resolve_parent_hwif(ot, bond_info.id, dev, hw_del_parent, sizeof(hw_del_parent));
-    delete_sub_interface(parent_hwif, vlan_id);
-    /* Get new list of physical interfaces from VS */
-    refresh_interfaces_list();
+    char hw_subifname[64];
+    snprintf(hw_subifname, sizeof(hw_subifname), "%s.%u", parent_hwif, vlan_id);
+    interface_ip_address_del_all(hw_subifname);
+    interface_set_state(hw_subifname, false);
 
 /*
     char host_subifname[32], hwif_name[32];
