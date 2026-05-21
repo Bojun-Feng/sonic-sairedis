@@ -1609,7 +1609,13 @@ sai_status_t SwitchVpp::vpp_create_router_interface(
         /* The host(tap) subinterface is also created as part of the vpp subinterface creation */
         char hw_subif_parent[32];
         const char *parent_hwif = vpp_resolve_parent_hwif(ot, bond_info.id, dev, hw_subif_parent, sizeof(hw_subif_parent));
-        create_sub_interface(parent_hwif, vlan_id, vlan_id);
+
+        char hw_subifname[64];
+        snprintf(hw_subifname, sizeof(hw_subifname), "%s.%u", parent_hwif, vlan_id);
+        if (interface_set_state(hw_subifname, true) != 0) {
+            /* Sub-interface does not exist yet, create it. */
+            create_sub_interface(parent_hwif, vlan_id, vlan_id);
+        }
 
         /* Get new list of physical interfaces from VS */
         refresh_interfaces_list();

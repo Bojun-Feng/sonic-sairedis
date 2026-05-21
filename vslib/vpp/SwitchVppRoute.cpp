@@ -226,6 +226,9 @@ sai_status_t SwitchVpp::IpRouteAddRemove(
                     if (vpp_get_hwif_name(rif_port_attr.value.oid, nh_vlan_id, hwif_names[i])) {
                         member_hwif = hwif_names[i].c_str();
                     }
+                } else {
+                    SWSS_LOG_WARN("Failed to resolve RIF %s for nexthop egress interface",
+                                  sai_serialize_object_id(nxt_grp_member->rif_oid).c_str());
                 }
             }
             create_vpp_nexthop_entry(nxt_grp_member, member_hwif, nexthop_type, &ip_route->nexthop[i]);
@@ -303,6 +306,9 @@ sai_status_t SwitchVpp::IpRoutePathAddRemove(
             if (vpp_get_hwif_name(rif_port_attr.value.oid, nh_vlan_id, member_hwif_str)) {
                 member_hwif = member_hwif_str.c_str();
             }
+        } else {
+            SWSS_LOG_WARN("Failed to resolve RIF %s for nexthop egress interface",
+                          sai_serialize_object_id(member->rif_oid).c_str());
         }
     }
     create_vpp_nexthop_entry(member, member_hwif, VPP_NEXTHOP_NORMAL, &ip_route->nexthop[0]);
