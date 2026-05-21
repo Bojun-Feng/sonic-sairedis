@@ -805,7 +805,7 @@ sai_status_t SwitchVpp::vpp_add_del_intf_ip_addr (
     }
 
     const char *hwifname = tap_to_hwif_name(if_name.c_str());
-    char hw_subifname[32];
+    char hw_subifname[64];
     const char *hw_ifname;
 
     if (vlan_id) {
@@ -1021,7 +1021,7 @@ sai_status_t SwitchVpp::vpp_add_del_intf_ip_addr_norif (
     }
 
     const char *hwifname;
-    char hw_subifname[32];
+    char hw_subifname[64];
     char hw_bviifname[32];
     char hw_bondifname[32];
     const char *hw_ifname;
@@ -1031,7 +1031,11 @@ sai_status_t SwitchVpp::vpp_add_del_intf_ip_addr_norif (
        hw_ifname = hw_bviifname;
     } else if (full_if_name.compare(0, strlen(PORTCHANNEL_PREFIX), PORTCHANNEL_PREFIX) == 0) {
         uint32_t bond_id = std::stoi(full_if_name.substr(strlen(PORTCHANNEL_PREFIX)));
-        snprintf(hw_bondifname, sizeof(hw_bondifname), "%s%d", BONDETHERNET_PREFIX, bond_id);
+        if (vlan_id) {
+            snprintf(hw_bondifname, sizeof(hw_bondifname), "%s%d.%u", BONDETHERNET_PREFIX, bond_id, vlan_id);
+        } else {
+            snprintf(hw_bondifname, sizeof(hw_bondifname), "%s%d", BONDETHERNET_PREFIX, bond_id);
+        }
         hw_ifname = hw_bondifname;
     } else {
        hwifname = tap_to_hwif_name(if_name.c_str());
@@ -1387,7 +1391,7 @@ sai_status_t SwitchVpp::vpp_get_router_intf_name (
     }
 
     const char *hwifname = tap_to_hwif_name(if_name.c_str());
-    char hw_subifname[32];
+    char hw_subifname[64];
     const char *hw_ifname;
 
     if (vlan_id) {
