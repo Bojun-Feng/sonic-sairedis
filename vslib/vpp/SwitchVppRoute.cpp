@@ -208,9 +208,27 @@ sai_status_t SwitchVpp::IpRouteAddRemove(
 
         nxt_grp_member = nxthop_group->grp_members;
 
+        std::vector<std::string> hwif_names(nxthop_group->nmembers);
         size_t i;
         for (i = 0; i < nxthop_group->nmembers; i++) {
-            create_vpp_nexthop_entry(nxt_grp_member, hwif_name, nexthop_type,  &ip_route->nexthop[i]);
+            const char *member_hwif = NULL;
+
+            if (nxt_grp_member->rif_oid != SAI_NULL_OBJECT_ID) {
+                sai_attribute_t rif_port_attr;
+                rif_port_attr.id = SAI_ROUTER_INTERFACE_ATTR_PORT_ID;
+                if (get(SAI_OBJECT_TYPE_ROUTER_INTERFACE, nxt_grp_member->rif_oid, 1, &rif_port_attr) == SAI_STATUS_SUCCESS) {
+                    uint32_t nh_vlan_id = 0;
+                    sai_attribute_t rif_vlan_attr;
+                    rif_vlan_attr.id = SAI_ROUTER_INTERFACE_ATTR_OUTER_VLAN_ID;
+                    if (get(SAI_OBJECT_TYPE_ROUTER_INTERFACE, nxt_grp_member->rif_oid, 1, &rif_vlan_attr) == SAI_STATUS_SUCCESS) {
+                        nh_vlan_id = rif_vlan_attr.value.u16;
+                    }
+                    if (vpp_get_hwif_name(rif_port_attr.value.oid, nh_vlan_id, hwif_names[i])) {
+                        member_hwif = hwif_names[i].c_str();
+                    }
+                }
+            }
+            create_vpp_nexthop_entry(nxt_grp_member, member_hwif, nexthop_type, &ip_route->nexthop[i]);
             nxt_grp_member++;
         }
         ip_route->nexthop_cnt = nxthop_group->nmembers;
@@ -270,7 +288,24 @@ sai_status_t SwitchVpp::IpRoutePathAddRemove(
     ip_route->is_multipath = true;  // Tell VPP to add/remove a path, not replace the route
     ip_route->nexthop_cnt = 1;
 
-    create_vpp_nexthop_entry(member, NULL, VPP_NEXTHOP_NORMAL, &ip_route->nexthop[0]);
+    const char *member_hwif = NULL;
+    std::string member_hwif_str;
+    if (member->rif_oid != SAI_NULL_OBJECT_ID) {
+        sai_attribute_t rif_port_attr;
+        rif_port_attr.id = SAI_ROUTER_INTERFACE_ATTR_PORT_ID;
+        if (get(SAI_OBJECT_TYPE_ROUTER_INTERFACE, member->rif_oid, 1, &rif_port_attr) == SAI_STATUS_SUCCESS) {
+            uint32_t nh_vlan_id = 0;
+            sai_attribute_t rif_vlan_attr;
+            rif_vlan_attr.id = SAI_ROUTER_INTERFACE_ATTR_OUTER_VLAN_ID;
+            if (get(SAI_OBJECT_TYPE_ROUTER_INTERFACE, member->rif_oid, 1, &rif_vlan_attr) == SAI_STATUS_SUCCESS) {
+                nh_vlan_id = rif_vlan_attr.value.u16;
+            }
+            if (vpp_get_hwif_name(rif_port_attr.value.oid, nh_vlan_id, member_hwif_str)) {
+                member_hwif = member_hwif_str.c_str();
+            }
+        }
+    }
+    create_vpp_nexthop_entry(member, member_hwif, VPP_NEXTHOP_NORMAL, &ip_route->nexthop[0]);
 
     int ret = ip_route_add_del(ip_route, is_add);
 
