@@ -154,7 +154,8 @@ sai_status_t SwitchVpp::IpRouteAddRemove(
         sai_status_t rif_status = get(SAI_OBJECT_TYPE_ROUTER_INTERFACE, next_hop_oid, 1, &rif_attr);
 
         if (rif_status == SAI_STATUS_SUCCESS &&
-            rif_attr.value.s32 == SAI_ROUTER_INTERFACE_TYPE_SUB_PORT)
+            (rif_attr.value.s32 == SAI_ROUTER_INTERFACE_TYPE_SUB_PORT ||
+             rif_attr.value.s32 == SAI_ROUTER_INTERFACE_TYPE_VLAN))
         {
             vpp_add_del_intf_ip_addr_norif(serializedObjectId, route_entry, is_add);
         }
