@@ -1583,7 +1583,7 @@ sai_status_t SwitchVpp::vpp_create_router_interface(
 
     std::string if_name;
     bool found = false;
-    platform_bond_info_t bond_info;
+    platform_bond_info_t bond_info = {};
     if (ot == SAI_OBJECT_TYPE_LAG) {
         CHECK_STATUS(get_lag_bond_info(obj_id, bond_info));
         if_name = std::string(PORTCHANNEL_PREFIX) + std::to_string(bond_info.id);
@@ -1782,7 +1782,7 @@ sai_status_t SwitchVpp::vpp_router_interface_remove_vrf(
 
     std::string if_name;
     bool found = false;
-    platform_bond_info_t bond_info;
+    platform_bond_info_t bond_info = {};
     if (objectTypeQuery(obj_id) == SAI_OBJECT_TYPE_LAG) {
         CHECK_STATUS(get_lag_bond_info(obj_id, bond_info));
         if_name = std::string(PORTCHANNEL_PREFIX) + std::to_string(bond_info.id);
@@ -1889,7 +1889,7 @@ sai_status_t SwitchVpp::vpp_remove_router_interface(sai_object_id_t rif_id)
     uint16_t vlan_id = attr.value.u16;
 
     std::string if_name;
-    platform_bond_info_t bond_info;
+    platform_bond_info_t bond_info = {};
     bool found;
     if (ot == SAI_OBJECT_TYPE_LAG) {
         status = get_lag_bond_info(obj_id, bond_info);
